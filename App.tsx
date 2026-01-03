@@ -8,8 +8,6 @@ import { fetchLiveMatches } from './services/apiFootball';
 import { sendDiscordNotification, sendGenericNotification } from './services/notification';
 import { getSettings, saveSettings, getNotifiedMatchIds, addNotifiedMatchId, clearNotifiedMatchIds } from './services/storage';
 
-const GOAL_DIFF_THRESHOLD = 5;
-
 const App: React.FC = () => {
   const [matches, setMatches] = useState<MatchResponse[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -54,7 +52,7 @@ const App: React.FC = () => {
         const diff = Math.abs(home - away);
         const matchId = match.fixture.id;
 
-        if (diff >= GOAL_DIFF_THRESHOLD) {
+        if (diff >= settingsRef.current.goalDiffThreshold) {
           if (!notifiedIdsRef.current.has(matchId)) {
             // New Blowout Detected
             const leader = home > away ? match.teams.home.name : match.teams.away.name;

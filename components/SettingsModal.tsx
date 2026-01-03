@@ -23,7 +23,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'refreshInterval' ? parseInt(value) || 30 : value
+      [name]: name === 'refreshInterval' || name === 'goalDiffThreshold' 
+        ? parseInt(value) || (name === 'refreshInterval' ? 30 : 5) 
+        : value
     }));
   };
 
@@ -48,6 +50,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
   const handleSave = () => {
     if (formData.refreshInterval < 15) {
       alert("O intervalo mínimo é 15 segundos para evitar bloqueios da API.");
+      return;
+    }
+    if (formData.goalDiffThreshold < 1 || formData.goalDiffThreshold > 20) {
+      alert("A diferença de gols deve estar entre 1 e 20.");
       return;
     }
     onSave(formData);
@@ -132,6 +138,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
                 {testingGeneric ? '...' : 'Testar'}
               </button>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-1">
+              Diferença de Gols para Notificação
+            </label>
+            <input
+              type="number"
+              name="goalDiffThreshold"
+              min="1"
+              max="20"
+              value={formData.goalDiffThreshold}
+              onChange={handleChange}
+              className="w-full bg-background border border-slate-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all"
+            />
+            <p className="text-xs text-slate-500 mt-1">Será notificado quando a diferença de gols for igual ou maior que este valor.</p>
           </div>
 
           <div>

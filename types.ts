@@ -3,6 +3,7 @@ export interface AppSettings {
   discordWebhook: string;
   genericWebhook: string;
   refreshInterval: number; // in seconds
+  goalDiffThreshold: number; // minimum goal difference to trigger notification
 }
 
 export interface Score {
@@ -77,4 +78,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   discordWebhook: '',
   genericWebhook: '',
   refreshInterval: 60,
+  goalDiffThreshold: 5,
 };
