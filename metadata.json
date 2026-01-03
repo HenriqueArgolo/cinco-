@@ -1,0 +1,5 @@
+{
+  "name": "5 OU + BOT",
+  "description": "Real-time football match monitoring dashboard that detects goal differences of 5+ and sends webhook notifications.",
+  "requestFramePermissions": []
+}
