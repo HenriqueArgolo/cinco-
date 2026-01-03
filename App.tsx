@@ -51,8 +51,14 @@ const App: React.FC = () => {
         const away = match.goals.away ?? 0;
         const diff = Math.abs(home - away);
         const matchId = match.fixture.id;
+        const threshold = settingsRef.current.goalDiffThreshold;
 
-        if (diff >= settingsRef.current.goalDiffThreshold) {
+        // Debug log for matches with significant goal difference
+        if (diff >= 3) {
+          addLog(`Analisando: ${match.teams.home.name} ${home}-${away} ${match.teams.away.name} (Diff: ${diff}, Threshold: ${threshold}, ID: ${matchId})`, 'info');
+        }
+
+        if (diff >= threshold) {
           if (!notifiedIdsRef.current.has(matchId)) {
             // New Blowout Detected
             const leader = home > away ? match.teams.home.name : match.teams.away.name;
@@ -62,18 +68,30 @@ const App: React.FC = () => {
             if (settingsRef.current.discordWebhook) {
               sendDiscordNotification(settingsRef.current.discordWebhook, match)
                 .then(() => addLog(`Notificação enviada ao Discord (Jogo ${matchId})`, 'success'))
-                .catch(() => addLog(`Falha ao enviar Discord (Jogo ${matchId})`, 'error'));
+                .catch((error) => {
+                  addLog(`Falha ao enviar Discord (Jogo ${matchId}): ${error.message || 'Erro desconhecido'}`, 'error');
+                  console.error('Erro ao enviar Discord:', error);
+                });
+            } else {
+              addLog(`Webhook do Discord não configurado. Configure nas opções.`, 'warning');
             }
             if (settingsRef.current.genericWebhook) {
               sendGenericNotification(settingsRef.current.genericWebhook, match)
                 .then(() => addLog(`Notificação enviada ao Webhook Genérico (Jogo ${matchId})`, 'success'))
-                .catch(() => addLog(`Falha ao enviar Webhook Genérico (Jogo ${matchId})`, 'error'));
+                .catch((error) => {
+                  addLog(`Falha ao enviar Webhook Genérico (Jogo ${matchId}): ${error.message || 'Erro desconhecido'}`, 'error');
+                  console.error('Erro ao enviar Webhook Genérico:', error);
+                });
             }
 
             // Persist notification state
             addNotifiedMatchId(matchId);
             notifiedIdsRef.current.add(matchId);
+          } else {
+            addLog(`Partida ${matchId} já foi notificada anteriormente.`, 'info');
           }
+        } else if (diff >= 3) {
+          addLog(`Diferença de ${diff} gols não atingiu o threshold de ${threshold} gols.`, 'info');
         }
       });
 
@@ -102,8 +120,9 @@ const App: React.FC = () => {
 
   const handleSaveSettings = (newSettings: AppSettings) => {
     setSettings(newSettings);
+    settingsRef.current = newSettings; // Update ref immediately
     saveSettings(newSettings);
-    addLog('Configurações salvas. Ciclo de monitoramento atualizado.', 'info');
+    addLog(`Configurações salvas. Threshold de gols: ${newSettings.goalDiffThreshold}. Ciclo de monitoramento atualizado.`, 'info');
     
     // Clear notified IDs if API Key changes (optional logic, kept simple here to just reload)
     if (newSettings.apiKey !== settings.apiKey) {

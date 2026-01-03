@@ -21,12 +21,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, s
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === 'refreshInterval' || name === 'goalDiffThreshold' 
-        ? parseInt(value) || (name === 'refreshInterval' ? 30 : 5) 
-        : value
-    }));
+    setFormData(prev => {
+      if (name === 'refreshInterval' || name === 'goalDiffThreshold') {
+        // Convert to number, use previous value if invalid
+        const numValue = parseInt(value, 10);
+        if (!isNaN(numValue) && numValue > 0) {
+          return { ...prev, [name]: numValue };
+        }
+        // If empty or invalid, keep previous value to allow user to continue typing
+        return prev;
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleTest = async (type: 'discord' | 'generic') => {

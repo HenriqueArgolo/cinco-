@@ -41,11 +41,16 @@ export const sendDiscordNotification = async (webhookUrl: string, match: MatchRe
   };
 
   try {
-    await fetch(webhookUrl, {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+    
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Erro desconhecido');
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
   } catch (error) {
     console.error("Falha ao enviar Discord webhook", error);
     throw error;
@@ -72,11 +77,16 @@ export const sendGenericNotification = async (webhookUrl: string, match: MatchRe
   };
 
   try {
-    await fetch(webhookUrl, {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+    
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Erro desconhecido');
+      throw new Error(`HTTP ${response.status}: ${errorText}`);
+    }
   } catch (error) {
     console.error("Falha ao enviar Generic webhook", error);
     throw error;
