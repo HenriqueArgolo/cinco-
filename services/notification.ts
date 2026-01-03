@@ -84,20 +84,80 @@ export const sendGenericNotification = async (webhookUrl: string, match: MatchRe
 };
 
 export const sendTestNotification = async (webhookUrl: string, type: 'discord' | 'generic') => {
-  const testPayload = type === 'discord' 
-    ? { 
-        username: "5 OU + BOT",
-        content: "✅ Teste de Webhook do Monitor '5 OU + BOT' executado com sucesso." 
+  // Create a mock match with test data that matches the real notification structure
+  const mockMatch: MatchResponse = {
+    fixture: {
+      id: 999999,
+      referee: "Test Referee",
+      timezone: "UTC",
+      date: new Date().toISOString(),
+      timestamp: Math.floor(Date.now() / 1000),
+      periods: {
+        first: 45,
+        second: 90
+      },
+      venue: {
+        id: 1,
+        name: "Estádio de Teste",
+        city: "Cidade de Teste"
+      },
+      status: {
+        long: "Second Half",
+        short: "2H",
+        elapsed: 75
       }
-    : { 
-        bot_name: "5 OU + BOT",
-        message: "Test webhook successful", 
-        event: "TEST" 
-      };
+    },
+    league: {
+      id: 1,
+      name: "Liga de Teste",
+      country: "Brasil",
+      logo: "https://example.com/logo.png",
+      flag: "https://example.com/flag.png",
+      season: 2024,
+      round: "Round 1"
+    },
+    teams: {
+      home: {
+        id: 1,
+        name: "Time Casa",
+        logo: "https://example.com/home.png",
+        winner: true
+      },
+      away: {
+        id: 2,
+        name: "Time Visitante",
+        logo: "https://example.com/away.png",
+        winner: false
+      }
+    },
+    goals: {
+      home: 6,
+      away: 0
+    },
+    score: {
+      halftime: {
+        home: 3,
+        away: 0
+      },
+      fulltime: {
+        home: null,
+        away: null
+      },
+      extratime: {
+        home: null,
+        away: null
+      },
+      penalty: {
+        home: null,
+        away: null
+      }
+    }
+  };
 
-  await fetch(webhookUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(testPayload)
-  });
+  // Use the same notification functions as in real scenarios
+  if (type === 'discord') {
+    await sendDiscordNotification(webhookUrl, mockMatch);
+  } else {
+    await sendGenericNotification(webhookUrl, mockMatch);
+  }
 };
