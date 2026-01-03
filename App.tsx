@@ -69,7 +69,17 @@ const App: React.FC = () => {
               sendDiscordNotification(settingsRef.current.discordWebhook, match)
                 .then(() => addLog(`Notificação enviada ao Discord (Jogo ${matchId})`, 'success'))
                 .catch((error) => {
-                  addLog(`Falha ao enviar Discord (Jogo ${matchId}): ${error.message || 'Erro desconhecido'}`, 'error');
+                  // Tratamento especial para rate limiting
+                  if (error.message && error.message.includes('429')) {
+                    const retryMatch = error.message.match(/Retry after: ([\d.]+)s/);
+                    if (retryMatch) {
+                      addLog(`Rate limit do Discord: aguardando ${retryMatch[1]}s antes de tentar novamente (Jogo ${matchId})`, 'warning');
+                    } else {
+                      addLog(`Rate limit do Discord detectado. A notificação será reenviada automaticamente (Jogo ${matchId})`, 'warning');
+                    }
+                  } else {
+                    addLog(`Falha ao enviar Discord (Jogo ${matchId}): ${error.message || 'Erro desconhecido'}`, 'error');
+                  }
                   console.error('Erro ao enviar Discord:', error);
                 });
             } else {
